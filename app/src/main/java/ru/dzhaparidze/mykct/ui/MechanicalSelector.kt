@@ -52,8 +52,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ru.dzhaparidze.mykct.ui.theme.Violet
-import ru.dzhaparidze.mykct.ui.theme.VioletDeep
-import ru.dzhaparidze.mykct.ui.theme.VioletLight
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -251,10 +249,6 @@ private class SelectorGeometry(density: Float, surface: Color, ink: Color, backg
         1f to background.copy(alpha = 0f),
         startY = baseline - 52f * density, endY = baseline,
     )
-    private val buttonBrush = Brush.linearGradient(
-        listOf(VioletLight, Violet, VioletDeep),
-        start = Offset(-radius, -radius), end = Offset(radius, radius),
-    )
     private val highlight = Brush.radialGradient(
         listOf(Color.White.copy(alpha = 0.28f), Color.Transparent),
         center = Offset(-radius * 0.35f, -radius * 0.6f), radius = radius * 1.2f,
@@ -283,7 +277,7 @@ private class SelectorGeometry(density: Float, surface: Color, ink: Color, backg
             if (growth <= 0.001f) continue
             translate(iconX(index), iconY) {
                 scale(growth, growth, pivot = Offset.Zero) {
-                    drawCircle(buttonBrush, radius, center = Offset.Zero)
+                    drawCircle(Violet, radius, center = Offset.Zero)
                     drawCircle(highlight, radius, center = Offset.Zero)
                     drawCircle(Color.White.copy(alpha = 0.23f), radius - rim.width,
                         center = Offset.Zero, style = rim)

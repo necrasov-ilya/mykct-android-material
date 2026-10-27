@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -66,7 +65,6 @@ import ru.dzhaparidze.mykct.data.ScheduleSettings
 import ru.dzhaparidze.mykct.data.ScheduleSettingsStore
 import ru.dzhaparidze.mykct.data.ScheduleView
 import ru.dzhaparidze.mykct.data.ThemeMode
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
 import ru.dzhaparidze.mykct.ui.ScreenTitle
 import ru.dzhaparidze.mykct.feature.navBarInset
 
@@ -568,25 +566,18 @@ private val WIDE_CARD_HEIGHT = 190.dp
 private val PORTRAIT_RISE = 26.dp
 
 /**
- * Подложка карточки: общий градиентный налёт по диагонали и два размытых пятна
+ * Подложка карточки: общий акцентный налёт и два размытых пятна
  * за портретом. Размытие делает из кругов свет - с чёткими кромками они читались
  * аппликацией. На Android 11 и ниже RenderEffect не умеет, там останутся круги.
  */
 @Composable
 private fun BoxScope.Tint(solid: Boolean) {
     // Поверх фотографии налёт плотнее: без него сцена спорит с подписью и кнопками.
-    val strong = if (solid) 0.18f else 0.72f
-    val weak = if (solid) 0.05f else 0.45f
+    val veil = if (solid) 0.08f else 0.30f
     Box(
         modifier = Modifier
             .matchParentSize()
-            .background(
-                Brush.linearGradient(
-                    0f to MaterialTheme.colorScheme.surfaceVariant.copy(alpha = strong),
-                    0.55f to MaterialTheme.colorScheme.primary.copy(alpha = weak * 0.4f),
-                    1f to MaterialTheme.colorScheme.primary.copy(alpha = weak * 0.25f),
-                ),
-            ),
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = veil)),
     )
 
     if (!solid) return
@@ -598,7 +589,7 @@ private fun BoxScope.Tint(solid: Boolean) {
             .size(128.dp)
             .then(if (CAN_BLUR) Modifier.blur(28.dp, BlurredEdgeTreatment.Unbounded) else Modifier)
             .clip(CircleShape)
-            .background(AccentGradient),
+            .background(MaterialTheme.colorScheme.primary),
     )
     Box(
         modifier = Modifier
@@ -621,7 +612,7 @@ private fun SocialButton(@DrawableRes iconRes: Int, description: String, flip: B
         modifier = Modifier
             .size(36.dp)
             .clip(CircleShape)
-            .background(AccentGradient)
+            .background(MaterialTheme.colorScheme.primary)
             .clickable(onClick = onClick)
             .padding(1.5.dp)
             .clip(CircleShape)

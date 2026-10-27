@@ -58,9 +58,6 @@ import ru.dzhaparidze.mykct.ui.ScreenTitle
 import ru.dzhaparidze.mykct.ui.SegmentedSwitch
 import ru.dzhaparidze.mykct.ui.ShinyPill
 import ru.dzhaparidze.mykct.ui.hairline
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.compositeOver
-import ru.dzhaparidze.mykct.ui.theme.GreenLime
 import ru.dzhaparidze.mykct.ui.theme.AppTheme
 import ru.dzhaparidze.mykct.ui.theme.statusDanger
 import ru.dzhaparidze.mykct.ui.theme.statusGreen
@@ -354,16 +351,13 @@ private fun MonthSummary(
     hasData: Boolean,
     motivation: String?,
 ) {
-    // Края карточки уходят в акцент: плоская заливка рядом с градиентом в кольце
-    // читается как вырезанный прямоугольник, а не как одна поверхность.
     val surface = MaterialTheme.colorScheme.surface
-    val edge = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f).compositeOver(surface)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Brush.horizontalGradient(listOf(edge, surface, edge)))
+            .background(surface)
             .hairline(RoundedCornerShape(24.dp))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -393,8 +387,7 @@ private fun MonthSummary(
 @Composable
 private fun PercentRing(percent: Int, hasData: Boolean) {
     val track = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-    // Дуга залита градиентом, а не одним цветом: лайм сверху, зелёный снизу.
-    val arc = Brush.linearGradient(listOf(GreenLime, statusGreen))
+    val arc = statusGreen
     val sweep by animateFloatAsState(
         targetValue = if (hasData) percent / 100f else 0f,
         animationSpec = tween(700),
@@ -416,7 +409,7 @@ private fun PercentRing(percent: Int, hasData: Boolean) {
             )
             if (sweep > 0f) {
                 drawArc(
-                    brush = arc,
+                    color = arc,
                     startAngle = -90f,
                     sweepAngle = 360f * sweep,
                     useCenter = false,

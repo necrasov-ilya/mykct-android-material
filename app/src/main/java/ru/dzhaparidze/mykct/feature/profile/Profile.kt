@@ -34,7 +34,7 @@ import ru.dzhaparidze.mykct.R
 import ru.dzhaparidze.mykct.data.Groups
 import ru.dzhaparidze.mykct.data.auth.User
 import ru.dzhaparidze.mykct.ui.hairline
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
+import ru.dzhaparidze.mykct.ui.theme.Violet
 import ru.dzhaparidze.mykct.ui.theme.statusDanger
 
 /**
@@ -49,7 +49,7 @@ fun AccountButton(signedIn: Boolean, onClick: () -> Unit, modifier: Modifier = M
             .clip(CircleShape)
             .then(
                 if (signedIn) {
-                    Modifier.background(AccentGradient, CircleShape)
+                    Modifier.background(Violet, CircleShape)
                 } else {
                     Modifier.background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f), CircleShape)
                 },

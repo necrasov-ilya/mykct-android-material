@@ -40,7 +40,6 @@ import ru.dzhaparidze.mykct.ui.ShinyPill
 import ru.dzhaparidze.mykct.ui.theme.DarkBackground
 import ru.dzhaparidze.mykct.ui.theme.Danger
 import ru.dzhaparidze.mykct.ui.theme.Violet
-import ru.dzhaparidze.mykct.ui.theme.VioletLight
 
 /**
  * Форма входа: логин и пароль уходят в auth-сервис колледжа через [AuthService].
@@ -235,10 +234,10 @@ private fun Field(
             unfocusedTextColor = Color.White,
             focusedContainerColor = Color.White.copy(alpha = 0.06f),
             unfocusedContainerColor = Color.White.copy(alpha = 0.06f),
-            cursorColor = VioletLight,
+            cursorColor = Violet,
             focusedBorderColor = Violet,
             unfocusedBorderColor = Color.White.copy(alpha = 0.14f),
-            focusedLabelColor = VioletLight,
+            focusedLabelColor = Violet,
             unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
         ),
         modifier = Modifier.fillMaxWidth(),

@@ -1,38 +1,11 @@
 package ru.dzhaparidze.mykct.ui.theme
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-// Токены сняты с крипто-референса: near-black фон, сине-фиолетовый акцент,
-// шапка - градиент из трёх остановок (светлая сирень сверху к глубокому индиго снизу).
-val Violet = Color(0xFF6C5CE7)        // акцент: активный пункт, кольцо, ссылки
-val VioletTint = Color(0xFFC3B6FF)    // самый светлый - блик в градиенте
-// Соседи акцента по кругу: пурпур в тёплую сторону, индиго в холодную.
-// Нужны, чтобы свечение фона не было одноцветным пятном.
-val VioletMagenta = Color(0xFFA347E0)
-val VioletIndigo = Color(0xFF4A54C9)
-val VioletLight = Color(0xFF9B8CFF)   // верхняя остановка градиента
-val VioletDeep = Color(0xFF4B3FBF)    // нижняя остановка градиента
-val VioletSoft = Color(0xFFE8E5FF)    // светлая заливка под акцент в светлой теме
-// Правый край кнопки: насыщеннее и темнее VioletDeep. На VioletDeep градиент кнопки
-// читался плоским - контраста между краями не хватало.
-val VioletInk = Color(0xFF3F1FD6)
-
-/**
- * Фирменный градиент: шапка, активный пункт навбара, выбранный день, карточки пар.
- * Четыре остановки, а не две: блик - светлая сирень - акцент - индиго. На двух
- * переход читается как плоская заливка, на четырёх появляется объём, как в референсах.
- */
-val AccentGradient = Brush.linearGradient(
-    0f to VioletTint,
-    0.12f to VioletLight,
-    0.4f to Violet,
-    1f to VioletDeep,
-    // из правого верхнего угла в левый нижний, как в iOS; бесконечность - край фигуры
-    start = Offset(Float.POSITIVE_INFINITY, 0f),
-    end = Offset(0f, Float.POSITIVE_INFINITY),
-)
+// Токены сняты с крипто-референса: near-black фон, фиолетовый акцент.
+// Фирменный градиент убран: акцент плоский - #8635BC, все заливки идут им.
+val Violet = Color(0xFF8635BC)       // акцент: активный пункт, кольцо, ссылки, карточки пар
+val VioletSoft = Color(0xFFE8E5FF)   // светлая заливка под акцент в светлой теме
 
 // Статусы взяты светлее и насыщеннее, чем обычная веб-палитра: на near-black фоне
 // #22C55E / #F5A623 / #E0575B выглядели тусклыми, будто выключенные.
@@ -49,8 +22,6 @@ val DangerDeep = Color(0xFFCE2C31)
 // Заливка ячейки календаря - одна на обе темы (Radix, шаг 9), текст поверх неё Ink.
 // Белого текста на жёлтой заливке не бывает: любой оттенок, который ещё читается как
 // жёлтый, даёт с белым 1.6:1. С Ink все три дают 6.4 / 12.4 / 5.0.
-/** Светлый конец градиента в кольце посещаемости: лайм переходит в зелёный. */
-val GreenLime = Color(0xFFC3F26B)
 
 val GreenFill = Color(0xFF46A758)
 val WarningFill = Color(0xFFFFC53D)

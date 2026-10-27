@@ -33,7 +33,6 @@ import ru.dzhaparidze.mykct.R
 import ru.dzhaparidze.mykct.ui.ShinyPill
 import ru.dzhaparidze.mykct.ui.theme.DarkBackground
 import ru.dzhaparidze.mykct.ui.theme.Violet
-import ru.dzhaparidze.mykct.ui.theme.VioletLight
 
 /**
  * Экран запуска: near-black фон, световая дуга сверху, лого, заголовок и кнопка.
@@ -164,7 +163,7 @@ internal fun DrawScope.drawGlowArc() {
     drawRect(
         Brush.radialGradient(
             0.50f to Color.Transparent,
-            0.78f to VioletLight.copy(alpha = 0.80f),
+            0.78f to Violet.copy(alpha = 0.80f),
             0.90f to Violet.copy(alpha = 0.30f),
             1f to Color.Transparent,
             center = center,

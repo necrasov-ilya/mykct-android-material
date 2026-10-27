@@ -62,7 +62,6 @@ import ru.dzhaparidze.mykct.ui.ShinyPill
 import ru.dzhaparidze.mykct.ui.Swirl
 import ru.dzhaparidze.mykct.ui.phaseOf
 import ru.dzhaparidze.mykct.ui.hairline
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
 
 private val SHEET_TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("H:mm")
 
@@ -309,7 +308,7 @@ private fun LessonHero(lesson: Lesson) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(AccentGradient),
+            .background(MaterialTheme.colorScheme.primary),
     ) {
         Icon(
             painter = painterResource(subjectIcon(lesson.title)),
@@ -579,7 +578,7 @@ private fun Choice(text: String, selected: Boolean, onClick: () -> Unit) {
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            // Ряби нет: отклик - сама заливка, на градиенте она читается грязью.
+            // Ряби нет: отклик - сама заливка.
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -590,7 +589,7 @@ private fun Choice(text: String, selected: Boolean, onClick: () -> Unit) {
             modifier = Modifier
                 .matchParentSize()
                 .alpha(progress)
-                .background(AccentGradient),
+                .background(MaterialTheme.colorScheme.primary),
         )
         Text(
             text = text,

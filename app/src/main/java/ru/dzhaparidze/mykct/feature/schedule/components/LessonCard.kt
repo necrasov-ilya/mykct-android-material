@@ -27,9 +27,6 @@ import androidx.compose.ui.unit.Constraints
 import ru.dzhaparidze.mykct.R
 import ru.dzhaparidze.mykct.data.Groups
 import ru.dzhaparidze.mykct.data.Lesson
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
-import ru.dzhaparidze.mykct.ui.theme.VioletLight
-import ru.dzhaparidze.mykct.ui.theme.VioletTint
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -47,7 +44,7 @@ fun LessonCard(
     now: LocalTime? = null,
 ) {
     val isNow = now != null
-    // Монохром по референсу: все карточки в фирменном градиенте, предметы различает
+    // Монохром по референсу: все карточки плоским акцентом, предметы различает
     // водяной знак, а не цвет. `colorHex` с портала намеренно игнорируется.
     val accent = MaterialTheme.colorScheme.primary
 
@@ -73,9 +70,9 @@ fun LessonCard(
                     .background(
                         Brush.horizontalGradient(
                             0f to Color.Transparent,
-                            0.25f to VioletLight.copy(alpha = 0.45f),
-                            0.5f to VioletTint.copy(alpha = 0.65f),
-                            0.75f to VioletLight.copy(alpha = 0.45f),
+                            0.25f to accent.copy(alpha = 0.45f),
+                            0.5f to accent.copy(alpha = 0.65f),
+                            0.75f to accent.copy(alpha = 0.45f),
                             1f to Color.Transparent,
                         ),
                     ),
@@ -95,15 +92,9 @@ fun LessonCard(
         border = if (isNow) BorderStroke(2.dp, Color.White.copy(alpha = 0.85f)) else null,
         shadowElevation = 6.dp,
     ) {
-        // matchParentSize, а не fillMaxSize: фон и водяной знак не должны участвовать
+        // matchParentSize, а не fillMaxSize: водяной знак не должен участвовать
         // в измерении карточки, иначе она растянется на всю высоту таймлайна.
         Box {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(AccentGradient),
-            )
-
             Icon(
                 painter = painterResource(subjectIcon(lesson.title)),
                 contentDescription = null,

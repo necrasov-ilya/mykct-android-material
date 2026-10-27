@@ -2,11 +2,6 @@ package ru.dzhaparidze.mykct.ui
 
 import android.os.Build
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,33 +26,21 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.dzhaparidze.mykct.ui.theme.Violet
-import ru.dzhaparidze.mykct.ui.theme.VioletInk
-import ru.dzhaparidze.mykct.ui.theme.VioletLight
-import ru.dzhaparidze.mykct.ui.theme.VioletTint
-import kotlin.math.hypot
 
 /**
- * Главное действие экрана: пилюля во всю ширину, залитая акцентным градиентом
- * по диагонали (светлая лаванда - глубокий индиго), с бегущей по кромке
- * conic-подсветкой (референс shiny-cta).
- *
- * Sweep-градиент в Compose повернуть нечем, поэтому крутится не градиент, а холст:
- * `rotate` вокруг центра кнопки. Рисуем квадрат со стороной в диагональ -
- * прямоугольник по размеру кнопки при повороте открывал бы углы.
+ * Главное действие экрана: пилюля во всю ширину, залитая плоским акцентом,
+ * со стеклянной плёнкой сверху и мягким ореолом под ней (референс shiny-cta,
+ * градиентная заливка заменена плоской).
  *
  * Цвета не из палитры темы: заливка одинаковая в светлой и тёмной, это её роль.
- * [shine] выключает бегущую кромку - внутри листа она отвлекает от выбора.
+ * [shine] выключает ореол - внутри листа он отвлекает от выбора.
  */
 @Composable
 fun ShinyPill(
@@ -68,29 +51,6 @@ fun ShinyPill(
     enabled: Boolean = true,
     shine: Boolean = true,
 ) {
-    // Анимация живёт только когда кромка видна: без этого пилюля пересобирается
-    // каждый кадр даже с выключенной подсветкой или неактивной кнопкой.
-    val angle = if (shine && enabled) {
-        rememberInfiniteTransition(label = "shine").animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing)),
-            label = "angle",
-        ).value
-    } else {
-        0f
-    }
-    // Выключенная кнопка не светится: подсветка - приглашение нажать.
-    val glow = if (enabled) 1f else 0f
-
-    // Заливка строго по горизонтали: блик слева, глубокий индиго справа. По диагонали
-    // светлая остановка размазывалась по всей кнопке и градиент читался плоским.
-    val fill = Brush.horizontalGradient(
-        0.00f to VioletTint,
-        0.28f to VioletLight,
-        1.00f to VioletInk,
-    )
-
     // Стеклянный блик: белая плёнка сверху, к середине сходит на нет.
     val sheen = Brush.verticalGradient(
         0.0f to Color.White.copy(alpha = 0.30f),
@@ -105,7 +65,7 @@ fun ShinyPill(
 
     // Выключенная гасится целиком: на светлой заливке одного бледного текста мало.
     Box(modifier = modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.45f)) {
-        if (CAN_BLUR && enabled) {
+        if (CAN_BLUR && enabled && shine) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -119,52 +79,13 @@ fun ShinyPill(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(CircleShape)
-                // Кромка, по которой бежит подсветка. Заливка и плёнка на ней те же,
-                // что внутри: без плёнки кромка выходила насыщеннее кнопки и в светлой
-                // теме читалась тёмной обводкой.
-                .then(
-                    if (!shine) Modifier else Modifier
-                        .background(fill)
-                        .background(sheen)
-                        .drawBehind {
-                            val side = hypot(size.width, size.height)
-                            rotate(angle) {
-                                drawRect(
-                                    brush = Brush.sweepGradient(
-                                        0.00f to Color.Transparent,
-                                        0.06f to Violet.copy(alpha = glow),
-                                        0.12f to VioletTint.copy(alpha = glow),
-                                        0.18f to Violet.copy(alpha = glow),
-                                        0.24f to Color.Transparent,
-                                        1.00f to Color.Transparent,
-                                        center = center,
-                                    ),
-                                    topLeft = Offset(
-                                        (size.width - side) / 2f,
-                                        (size.height - side) / 2f,
-                                    ),
-                                    size = Size(side, side),
-                                )
-                            }
-                        }
-                        .padding(2.dp)
-                        .clip(CircleShape),
-                )
-                .background(fill)
+                .background(Violet)
                 .background(sheen)
-                // Кромка стекла: в тёмной теме светлая сверху и гаснет книзу, в светлой
-                // наоборот - тёмная и чуть плотнее снизу, иначе кнопка сливается с фоном.
+                // Кромка стекла: в тёмной теме светлая, в светлой - тёмная,
+                // иначе кнопка сливается с фоном.
                 .border(
                     width = 1.dp,
-                    brush = if (darkTheme) {
-                        Brush.verticalGradient(
-                            listOf(Color.White.copy(alpha = 0.55f), Color.White.copy(alpha = 0.10f)),
-                        )
-                    } else {
-                        Brush.verticalGradient(
-                            listOf(VioletInk.copy(alpha = 0.25f), VioletInk.copy(alpha = 0.45f)),
-                        )
-                    },
+                    color = if (darkTheme) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.20f),
                     shape = CircleShape,
                 )
                 .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick)

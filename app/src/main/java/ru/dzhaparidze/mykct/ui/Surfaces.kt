@@ -45,7 +45,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
 
 /** Волосяная светлая кромка карточки - она отделяет её от фона без тени. */
 @Composable
@@ -175,11 +174,11 @@ fun NavArrow(@DrawableRes icon: Int, description: String, onClick: () -> Unit) {
 
 /**
  * Переключатель разделов внутри экрана: капсула с бегунком под активным пунктом,
- * залитым тем же `AccentGradient`, что и активный пункт навбара.
+ * залитым тем же акцентом, что и активный пункт навбара.
  *
  * Бегунок едет, а не перекрашивается на месте: без движения переключение читается
  * как перерисовка всего экрана, а не как переход между соседними разделами.
- * Ряби нет - под пальцем градиент, и она с ним спорит (см. DESIGN.md).
+ * Ряби нет - под пальцем акцентная заливка, и она спорит с откликом (см. DESIGN.md).
  */
 @Composable
 fun SegmentedSwitch(
@@ -209,7 +208,7 @@ fun SegmentedSwitch(
                 .fillMaxWidth(1f / items.size)
                 .fillMaxHeight()
                 .align(BiasAlignment(bias, 0f))
-                .background(AccentGradient, CircleShape),
+                .background(MaterialTheme.colorScheme.primary, CircleShape),
         )
         Row(modifier = Modifier.fillMaxSize()) {
             items.forEachIndexed { index, title ->

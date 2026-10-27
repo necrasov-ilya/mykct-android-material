@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -59,9 +58,6 @@ import ru.dzhaparidze.mykct.ui.phaseOf
 import ru.dzhaparidze.mykct.ui.PullToRefresh
 import ru.dzhaparidze.mykct.ui.ScreenTitle
 import ru.dzhaparidze.mykct.ui.hairline
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
-import ru.dzhaparidze.mykct.ui.theme.VioletIndigo
-import ru.dzhaparidze.mykct.ui.theme.VioletLight
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -105,8 +101,8 @@ internal fun lessonsCount(count: Int): String {
 }
 
 /**
- * Свет в фоне экранов, как в iOS (`AmbientGlow`): акцент и сиреневый блик сверху,
- * индиго у нижней кромки под навбаром. Верхние пятна считаются от ширины, нижнее
+ * Свет в фоне экранов, как в iOS (`AmbientGlow`): плоские акцентные пятна -
+ * два сверху и одно у нижней кромки под навбаром. Верхние пятна считаются от ширины, нижнее
  * привязано к нижней кромке. [drift] от 0 до 1 водит пятна по горизонтали навстречу
  * друг другу - верхние справа налево, нижнее слева направо.
  */
@@ -129,10 +125,9 @@ internal fun DrawScope.drawAmbientGlow(accent: Color, darkTheme: Boolean, drift:
 
     val top = w * (1 - drift)
     glow(accent, 0.50f * strength, top, -w * 0.05f, w * 0.80f)
-    glow(VioletLight, 0.26f * strength, top + w * 0.22f, w * 0.12f, w * 0.55f)
-    // Снизу на светлой теме индиго уходит в серую муть, там вместо него акцент.
+    glow(accent, 0.26f * strength, top + w * 0.22f, w * 0.12f, w * 0.55f)
     glow(
-        if (darkTheme) VioletIndigo else accent,
+        accent,
         (if (darkTheme) 0.35f else 0.30f) * strength,
         w * (0.1f + 0.9f * drift),
         h,
@@ -414,7 +409,7 @@ private fun StaleNote(fetchedAt: LocalDate?, offline: Boolean) {
 /**
  * Граница между днями в многодневном виде. Мелкой подписи не хватало - таймлайны
  * сливались в один, - поэтому день открывает полоса во всю ширину: у сегодняшнего
- * она залита акцентным градиентом, у остальных лежит на поверхности с волосяной кромкой.
+ * она залита акцентом, у остальных лежит на поверхности с волосяной кромкой.
  * Часы дня в подпись не пишем: на узком экране они выдавливают дату, а в таймлайне
  * под полосой они и так видны.
  */
@@ -429,7 +424,7 @@ private fun DayHeader(date: LocalDate, lessons: List<Lesson>, first: Boolean) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .background(
-                if (today) AccentGradient else SolidColor(colors.surface),
+                if (today) colors.primary else colors.surface,
                 CircleShape,
             )
             .hairline(CircleShape)

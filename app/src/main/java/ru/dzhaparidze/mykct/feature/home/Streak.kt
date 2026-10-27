@@ -59,7 +59,7 @@ import ru.dzhaparidze.mykct.data.api.Attendance
 import ru.dzhaparidze.mykct.data.api.AttendanceRecord
 import ru.dzhaparidze.mykct.data.api.Streak
 import ru.dzhaparidze.mykct.ui.hairline
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
+import ru.dzhaparidze.mykct.ui.theme.Violet
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -404,7 +404,7 @@ private fun WeekChecks(weekStart: LocalDate, records: List<AttendanceRecord>) {
                     modifier = Modifier
                         .size(36.dp)
                         .then(
-                            if (attended) Modifier.background(AccentGradient, CircleShape) else Modifier,
+                            if (attended) Modifier.background(Violet, CircleShape) else Modifier,
                         ),
                     contentAlignment = Alignment.Center,
                 ) {

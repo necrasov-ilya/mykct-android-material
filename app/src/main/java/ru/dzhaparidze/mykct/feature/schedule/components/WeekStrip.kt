@@ -19,7 +19,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.dzhaparidze.mykct.feature.schedule.DayCell
-import ru.dzhaparidze.mykct.ui.theme.AccentGradient
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -107,7 +106,7 @@ private fun DayItem(
                 modifier = Modifier
                     .matchParentSize()
                     .alpha(selected)
-                    .background(AccentGradient),
+                    .background(MaterialTheme.colorScheme.primary),
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
