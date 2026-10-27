@@ -1,8 +1,6 @@
 package ru.dzhaparidze.mykct.feature
 
 import androidx.compose.animation.AnimatedContent
-import ru.dzhaparidze.mykct.feature.schedule.drawAmbientGlow
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -18,8 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ru.dzhaparidze.mykct.R
@@ -38,11 +35,6 @@ import ru.dzhaparidze.mykct.feature.schedule.ScheduleViewModel
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.LocalDate
-import ru.dzhaparidze.mykct.ui.theme.OledBackground
-import androidx.compose.runtime.produceState
-import kotlinx.coroutines.delay
-import kotlin.math.PI
-import kotlin.math.cos
 import ru.dzhaparidze.mykct.ui.MechanicalSelector
 import ru.dzhaparidze.mykct.feature.settings.SettingsScreen
 
@@ -95,33 +87,14 @@ fun AppShell(
         onWeekOpened()
     }
 
-
-    val accent = MaterialTheme.colorScheme.primary
-    val darkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    // Чёрная тема - без света в фоне. Свет дрейфует с периодом 90 с, 8 кадров
-    // в секунду хватает: за кадр пятно сдвигается меньше чем на пиксель.
-    val glow = MaterialTheme.colorScheme.background != OledBackground
-    val drift by produceState(0f, glow) {
-        while (glow) {
-            value = ((1 - cos(2 * PI * System.currentTimeMillis() / 90_000)) / 2).toFloat()
-            delay(125)
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
-        // Фон и свет по кромкам - общие для всех экранов и живут здесь,
-        // а не внутри каждого: при смене экрана подложка не участвует в переходе,
-        // меняется только содержимое. Раньше фон рисовал каждый экран сам, поэтому
-        // гас вместе с ним - и в середине перехода экран целиком уходил в чёрный.
+        // Сплошная подложка не участвует в переходе между экранами.
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .drawBehind { if (glow) drawAmbientGlow(accent, darkTheme, drift) },
+                .background(MaterialTheme.colorScheme.background),
         ) {
-        // Содержимое сменяется по очереди: старое гаснет 120 мс, новое проявляется 180 мс.
-        // Одновременный наплыв кладёт текст на текст, а разнести по времени можно только
-        // потому, что подложка не анимируется - в паузе видно фон со светом, а не пустоту.
+        // Содержимое сменяется по очереди, без наложения текста двух экранов.
         AnimatedContent(
             targetState = screen,
             transitionSpec = {
@@ -143,21 +116,14 @@ fun AppShell(
         }
         }
 
-        // Paint through the system navigation inset: the housing's lower edge dissolves into
-        // the same background instead of ending above the gesture handle over timetable text.
-        val bottomColor = MaterialTheme.colorScheme.background
+        // Окрашиваем только системную панель, без высокой подложки внутри приложения.
         Box(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(navBarInset() + 16.dp)
+                .windowInsetsBottomHeight(WindowInsets.navigationBars)
                 .background(
-                    Brush.verticalGradient(
-                        0f to bottomColor.copy(alpha = 0f),
-                        0.45f to bottomColor.copy(alpha = 0.92f),
-                        0.72f to bottomColor,
-                        1f to bottomColor,
-                    ),
+                    lerp(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurface, 0.04f),
                 ),
         )
 

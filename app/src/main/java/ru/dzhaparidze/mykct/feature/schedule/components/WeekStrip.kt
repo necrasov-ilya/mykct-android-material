@@ -60,8 +60,7 @@ private fun DayItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Выбранный день - тот же фирменный градиент, что в шапке и в навбаре;
-    // невыбранные остаются плоской заливкой, иначе полоса рябит.
+    // Плоское выделение; контентные цвета задаёт поверхность недели.
     val selected by animateFloatAsState(
         targetValue = if (isSelected) 1f else 0f,
         animationSpec = tween(200),

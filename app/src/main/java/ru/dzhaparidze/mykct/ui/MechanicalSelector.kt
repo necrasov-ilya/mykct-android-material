@@ -28,7 +28,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -75,9 +74,8 @@ fun MechanicalSelector(
     val surface = MaterialTheme.colorScheme.surface
     val ink = MaterialTheme.colorScheme.onSurface
     val idle = MaterialTheme.colorScheme.onSurfaceVariant
-    val background = MaterialTheme.colorScheme.background
-    val geometry = remember(density, surface, ink, background) {
-        SelectorGeometry(density.density, surface, ink, background)
+    val geometry = remember(density, surface, ink) {
+        SelectorGeometry(density.density, surface, ink)
     }
     var position by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
     var velocity by remember { mutableFloatStateOf(0f) }
@@ -225,7 +223,7 @@ private fun emergence(position: Float, index: Int): Float {
     return t * t * (3f - 2f * t)
 }
 
-private class SelectorGeometry(density: Float, surface: Color, ink: Color, background: Color) {
+private class SelectorGeometry(density: Float, surface: Color, ink: Color) {
     val pitch = SLOT_PITCH * density
     val iconSize = ICON_SIZE * density
     private val baseline = SELECTOR_CLEARANCE * density
@@ -233,26 +231,8 @@ private class SelectorGeometry(density: Float, surface: Color, ink: Color, backg
     val iconY = baseline - 27f * density
     private val radius = 23f * density
     private val rim = Stroke(0.65f * density)
-    // Feather only the housing into the lower background; buttons and icons stay crisp.
-    private val edgeBrush = Brush.verticalGradient(
-        0f to ink.copy(alpha = 0.17f),
-        0.35f to ink.copy(alpha = 0.11f),
-        0.7f to ink.copy(alpha = 0.035f),
-        1f to ink.copy(alpha = 0f),
-        startY = baseline - 16f * density, endY = baseline,
-    )
-    private val bodyBrush = Brush.verticalGradient(
-        0f to lerp(surface, ink, 0.075f),
-        0.62f to background.copy(alpha = 0.95f),
-        0.8f to background.copy(alpha = 0.70f),
-        0.92f to background.copy(alpha = 0.22f),
-        1f to background.copy(alpha = 0f),
-        startY = baseline - 52f * density, endY = baseline,
-    )
-    private val highlight = Brush.radialGradient(
-        listOf(Color.White.copy(alpha = 0.28f), Color.Transparent),
-        center = Offset(-radius * 0.35f, -radius * 0.6f), radius = radius * 1.2f,
-    )
+    private val bodyColor = lerp(surface, ink, 0.04f)
+    private val edgeColor = ink.copy(alpha = 0.08f)
     private val body = Path().apply {
         // Fixed, symmetric shoulders and a nearly level crown. The bottom is clipped by the screen edge.
         fun x(value: Float) = cx + value * density
@@ -269,8 +249,8 @@ private class SelectorGeometry(density: Float, surface: Color, ink: Color, backg
     fun hitSlot(x: Float) = (1f + (x - cx) / pitch).roundToInt().coerceIn(0, 2)
 
     fun draw(scope: DrawScope, position: Float) = with(scope) {
-        drawPath(body, bodyBrush)
-        drawPath(body, edgeBrush, style = rim)
+        drawPath(body, bodyColor)
+        drawPath(body, edgeColor, style = rim)
         // Only the local buttons grow/retract; housing and icon positions never follow the gesture.
         for (index in 0..2) {
             val growth = emergence(position, index)
@@ -278,9 +258,6 @@ private class SelectorGeometry(density: Float, surface: Color, ink: Color, backg
             translate(iconX(index), iconY) {
                 scale(growth, growth, pivot = Offset.Zero) {
                     drawCircle(Violet, radius, center = Offset.Zero)
-                    drawCircle(highlight, radius, center = Offset.Zero)
-                    drawCircle(Color.White.copy(alpha = 0.23f), radius - rim.width,
-                        center = Offset.Zero, style = rim)
                 }
             }
         }

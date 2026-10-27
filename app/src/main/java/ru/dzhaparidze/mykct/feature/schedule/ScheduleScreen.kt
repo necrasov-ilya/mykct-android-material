@@ -1,6 +1,5 @@
 package ru.dzhaparidze.mykct.feature.schedule
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,22 +13,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -58,6 +53,8 @@ import ru.dzhaparidze.mykct.ui.phaseOf
 import ru.dzhaparidze.mykct.ui.PullToRefresh
 import ru.dzhaparidze.mykct.ui.ScreenTitle
 import ru.dzhaparidze.mykct.ui.hairline
+import ru.dzhaparidze.mykct.ui.theme.DarkBackground
+import ru.dzhaparidze.mykct.ui.theme.Violet
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -100,41 +97,6 @@ internal fun lessonsCount(count: Int): String {
     return "$count $word"
 }
 
-/**
- * Свет в фоне экранов, как в iOS (`AmbientGlow`): плоские акцентные пятна -
- * два сверху и одно у нижней кромки под навбаром. Верхние пятна считаются от ширины, нижнее
- * привязано к нижней кромке. [drift] от 0 до 1 водит пятна по горизонтали навстречу
- * друг другу - верхние справа налево, нижнее слева направо.
- */
-internal fun DrawScope.drawAmbientGlow(accent: Color, darkTheme: Boolean, drift: Float) {
-    val w = size.width
-    val h = size.height
-
-    // На светлом фоне та же прозрачность читается вдвое ярче - там всё гасим вдвое.
-    val strength = if (darkTheme) 1f else 0.5f
-
-    fun glow(color: Color, alpha: Float, cx: Float, cy: Float, radius: Float) {
-        drawRect(
-            Brush.radialGradient(
-                colors = listOf(color.copy(alpha = alpha), Color.Transparent),
-                center = Offset(cx, cy),
-                radius = radius,
-            ),
-        )
-    }
-
-    val top = w * (1 - drift)
-    glow(accent, 0.50f * strength, top, -w * 0.05f, w * 0.80f)
-    glow(accent, 0.26f * strength, top + w * 0.22f, w * 0.12f, w * 0.55f)
-    glow(
-        accent,
-        (if (darkTheme) 0.35f else 0.30f) * strength,
-        w * (0.1f + 0.9f * drift),
-        h,
-        w * 0.60f,
-    )
-}
-
 @Composable
 fun ScheduleScreen(
     account: @Composable () -> Unit,
@@ -167,8 +129,7 @@ fun ScheduleScreen(
     val homeViewModel: HomeViewModel = viewModel()
     val home by homeViewModel.state.collectAsStateWithLifecycle()
 
-    // Фон, свет и сетка - общие для всех экранов и живут в `AppShell`: при смене
-    // экрана меняется только содержимое, подложка остаётся на месте.
+    // Шапка состоит из вложенных поверхностей; расписание ниже живёт в теме приложения.
     Box(modifier = Modifier.fillMaxSize()) {
     // `isRefreshing` только поверх уже показанной недели: на первой загрузке
     // крутится свой индикатор в теле экрана, и два спиннера сразу читались бы
@@ -195,6 +156,7 @@ fun ScheduleScreen(
             onPrevWeek = { viewModel.shiftWeek(-1) },
             onNextWeek = { viewModel.shiftWeek(1) },
             onToday = viewModel::goToToday,
+            onSelectDate = viewModel::selectDate,
             account = account,
         )
 
@@ -207,15 +169,7 @@ fun ScheduleScreen(
         // только без пар, иначе длинная неделя упрётся в высоту экрана
         val fills = Modifier.weight(1f).takeIf { phase != Phase.Content } ?: Modifier
 
-        // Отдельного "листа" больше нет: контент лежит на том же фоне, что и шапка.
         Column(modifier = Modifier.fillMaxWidth().then(fills)) {
-            WeekStrip(
-                days = state.days,
-                // подсвечен весь показанный диапазон, а не только "точка входа" в него
-                selectedDates = state.visible.map { it.date }.toSet(),
-                onSelect = viewModel::selectDate,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
 
             Spacer(Modifier.height(24.dp))
 
@@ -314,10 +268,7 @@ fun ScheduleScreen(
     }
 }
 
-/**
- * Градиентная шапка по референсу: строка заголовка с пилюлей выбора, крупная сводка дня
- * на месте "баланса" и навигация по неделям под ней.
- */
+/** Три вложенных слоя: тёмная панель, фиолетовая сводка и глубокая подложка недели. */
 @Composable
 private fun Hero(
     state: ScheduleUiState,
@@ -328,53 +279,88 @@ private fun Hero(
     onPrevWeek: () -> Unit,
     onNextWeek: () -> Unit,
     onToday: () -> Unit,
+    onSelectDate: (LocalDate) -> Unit,
     account: @Composable () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(horizontal = 20.dp)
-            // Верхний отступ живёт в ScreenTitle - здесь он был бы вторым, и заголовок
-            // расписания висел бы ниже, чем на "Главной" и в настройках.
-            .padding(bottom = 28.dp),
-    ) {
-        ScreenTitle(text = "Расписание") {
-            // Огонёк у любого вошедшего, даже пока стрик грузится: без токена стрика нет.
-            if (signedIn) {
-                StreakFlame(active = (streak?.current ?: 0) > 0, onClick = onOpenStreak)
-                Spacer(Modifier.width(4.dp))
+    val weekSurface = lerp(Violet, Color.Black, 0.28f)
+    // Шапка остаётся фиолетовой в любой теме, поэтому её контентные роли локальны.
+    val colors = MaterialTheme.colorScheme.copy(
+        primary = Color(0xFFE9C6FF),
+        onPrimary = weekSurface,
+        onTertiary = weekSurface,
+        background = weekSurface,
+        onBackground = Color.White,
+        onSurface = Color.White,
+        onSurfaceVariant = Color.White.copy(alpha = 0.8f),
+        surfaceVariant = Color.White.copy(alpha = 0.12f),
+    )
+    MaterialTheme(colorScheme = colors) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp))
+                .background(weekSurface),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                    .background(Violet),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                        .background(DarkBackground)
+                        .statusBarsPadding()
+                        .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                ) {
+                    ScreenTitle(text = "Расписание") {
+                        if (signedIn) {
+                            StreakFlame(active = (streak?.current ?: 0) > 0, onClick = onOpenStreak)
+                            Spacer(Modifier.width(4.dp))
+                        }
+                        GroupPill(label = state.selection.label(), onClick = onOpenGroups)
+                        Spacer(Modifier.width(4.dp))
+                        account()
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .padding(start = 12.dp, end = 12.dp, top = 14.dp, bottom = 20.dp)
+                        .fillMaxWidth()
+                        .background(lerp(Violet, Color.White, 0.08f), RoundedCornerShape(26.dp))
+                        .padding(16.dp),
+                ) {
+                    HeroSummary(
+                        caption = "Неделя ${weekRange(state.weekStart)}",
+                        // Не показываем «Пар нет», пока неделя ещё загружается.
+                        value = when {
+                            state.isLoading -> "Загружаем..."
+                            state.error != null -> "Нет данных"
+                            state.visible.sumOf { it.lessons.slotCount() } == 0 -> "Пар нет"
+                            else -> lessonsCount(state.visible.sumOf { it.lessons.slotCount() })
+                        },
+                        subtitle = state.visible.singleOrNull()
+                            ?.let { it.date.dayTitle() + it.lessons.dayHours() }
+                            ?: state.visible.dateRange(),
+                    )
+                    if (state.isStale || state.isOffline) {
+                        StaleNote(fetchedAt = state.fetchedAt, offline = state.isOffline)
+                    }
+                    Spacer(Modifier.height(20.dp))
+                    WeekNav(onToday = onToday, onPrev = onPrevWeek, onNext = onNextWeek)
+                }
             }
-            GroupPill(label = state.selection.label(), onClick = onOpenGroups)
-            Spacer(Modifier.width(4.dp))
-            account()
+
+            WeekStrip(
+                days = state.days,
+                selectedDates = state.visible.map { it.date }.toSet(),
+                onSelect = onSelectDate,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+            )
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        HeroSummary(
-            caption = "Неделя ${weekRange(state.weekStart)}",
-            // Крупная строка на месте баланса из референса: сколько пар в выбранном дне.
-            // Во время загрузки "Пар нет" - враньё, пока данных ещё нет.
-            value = when {
-                state.isLoading -> "Загружаем..."
-                state.error != null -> "Нет данных"
-                state.visible.sumOf { it.lessons.slotCount() } == 0 -> "Пар нет"
-                else -> lessonsCount(state.visible.sumOf { it.lessons.slotCount() })
-            },
-            // Один день - "Понедельник, 17 августа · 9:00 - 15:40", диапазон - "17 - 21 августа"
-            subtitle = state.visible.singleOrNull()
-                ?.let { it.date.dayTitle() + it.lessons.dayHours() }
-                ?: state.visible.dateRange(),
-        )
-
-        if (state.isStale || state.isOffline) {
-            StaleNote(fetchedAt = state.fetchedAt, offline = state.isOffline)
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        WeekNav(onToday = onToday, onPrev = onPrevWeek, onNext = onNextWeek)
     }
 }
 
@@ -461,7 +447,7 @@ private fun List<DaySchedule>.dateRange(): String {
 private fun List<Lesson>.dayHours(): String =
     if (isEmpty()) "" else " · ${first().start.format(TIME)} - ${last().end.format(TIME)}"
 
-/** Стеклянная пилюля поверх градиента: показывает выбор и открывает шит групп. */
+/** Пилюля на тёмной панели: показывает выбор и открывает список групп. */
 @Composable
 private fun GroupPill(label: String, onClick: () -> Unit) {
     Row(
