@@ -69,6 +69,7 @@ val DarkBackground = Color(0xFF0C0C11)
 val DarkSurface = Color(0xFF16161D)   // карточки, навбар
 val DarkGreyFill = Color(0xFF23232D)  // круглые кнопки, невыбранные круги
 val DarkGreyText = Color(0xFF8A8A99)
+val DarkSettingsFill = Color(0xFF141413)  // карточки настроек в тёмной теме: от фона отделяются заливкой, не обводкой
 
 // Чёрная тема: фон гасит пиксели OLED, карточки берут фон тёмной темы
 val OledBackground = Color.Black

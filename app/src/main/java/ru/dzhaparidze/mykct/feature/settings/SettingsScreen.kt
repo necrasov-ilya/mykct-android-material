@@ -59,6 +59,8 @@ import ru.dzhaparidze.mykct.R
 import ru.dzhaparidze.mykct.data.SelectionStore
 import ru.dzhaparidze.mykct.data.auth.AuthService
 import ru.dzhaparidze.mykct.data.selectionOf
+import ru.dzhaparidze.mykct.ui.theme.DarkBackground
+import ru.dzhaparidze.mykct.ui.theme.DarkSettingsFill
 import ru.dzhaparidze.mykct.ui.theme.statusDanger
 import ru.dzhaparidze.mykct.data.ScheduleSettings
 import ru.dzhaparidze.mykct.data.ScheduleSettingsStore
@@ -66,7 +68,6 @@ import ru.dzhaparidze.mykct.data.ScheduleView
 import ru.dzhaparidze.mykct.data.ThemeMode
 import ru.dzhaparidze.mykct.ui.theme.AccentGradient
 import ru.dzhaparidze.mykct.ui.ScreenTitle
-import ru.dzhaparidze.mykct.ui.hairline
 import ru.dzhaparidze.mykct.feature.navBarInset
 
 /**
@@ -193,8 +194,7 @@ private fun ContactPill(onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surface)
-            .hairline(CircleShape)
+            .background(cardFill())
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(vertical = 18.dp),
         horizontalArrangement = Arrangement.Center,
@@ -335,8 +335,8 @@ private fun ScheduleView.icon(): Int = when (this) {
 
 /**
  * Разделитель внутри карточки - с отступом под иконку, как в референсе.
- * Цвет свой: штатный outlineVariant в тёмной теме совпадает с фоном карточки
- * (оба DarkGreyFill), и линии не видно вовсе.
+ * Цвет свой: штатный outlineVariant в тёмной теме - DarkGreyFill, он заметно ярче
+ * тёмной заливки карточек, и линия выходит грубее, чем нужно.
  */
 @Composable
 private fun Divider() = HorizontalDivider(
@@ -404,6 +404,15 @@ private fun SectionTitle(text: String) {
     )
 }
 
+/**
+ * Заливка карточек настроек: в тёмной теме #141413 - от фона её отделяет сама
+ * заливка, обводка не нужна. В светлой и чёрной темах - как раньше.
+ */
+@Composable
+private fun cardFill(): Color =
+    if (MaterialTheme.colorScheme.background == DarkBackground) DarkSettingsFill
+    else MaterialTheme.colorScheme.surfaceVariant
+
 @Composable
 private fun Card(content: @Composable ColumnScope.() -> Unit) {
     Column(
@@ -411,8 +420,7 @@ private fun Card(content: @Composable ColumnScope.() -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .hairline(RoundedCornerShape(20.dp)),
+            .background(cardFill()),
         content = content,
     )
 }
@@ -468,8 +476,7 @@ private fun PersonCard(
                 .fillMaxWidth()
                 .height(if (wideShot) WIDE_CARD_HEIGHT else CARD_HEIGHT)
                 .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .hairline(RoundedCornerShape(24.dp)),
+                .background(cardFill()),
         ) {
             if (backdrop != null) {
                 Image(

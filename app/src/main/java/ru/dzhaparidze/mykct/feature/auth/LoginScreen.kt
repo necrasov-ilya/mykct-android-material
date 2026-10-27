@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -191,21 +190,22 @@ fun LoginScreen(onBack: () -> Unit, onSuccess: () -> Unit, onSkip: (() -> Unit)?
 }
 
 /**
- * Фон экрана входа: панда на весь экран, снизу она уходит в тёмный фон под форму.
- * Тот же фон у приглашения войти на "Главной", чтобы это читалось одним экраном.
+ * Фон экрана входа: анимированная панда на весь экран, снизу её закрывает шторка -
+ * панель тёмного фона с ровной верхней кромкой. Тот же фон у приглашения войти
+ * на "Главной", чтобы это читалось одним экраном.
  */
 @Composable
 fun PandaBackdrop() {
     Box(modifier = Modifier.fillMaxSize().background(DarkBackground)) {
         LiquidGlassPanda(Modifier.fillMaxSize())
+        // Шторка: ровная кромка вместо градиентной тени под кадром.
         Box(
-            modifier = Modifier.matchParentSize().background(
-                Brush.verticalGradient(
-                    0.40f to Color.Transparent,
-                    0.65f to DarkBackground.copy(alpha = 0.94f),
-                    1f to DarkBackground,
-                ),
-            ),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .fillMaxHeight(fraction = 0.47f)
+                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                .background(DarkBackground),
         )
     }
 }
